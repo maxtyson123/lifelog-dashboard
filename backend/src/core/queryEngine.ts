@@ -68,21 +68,38 @@ export class QueryEngine {
      * This is a placeholder for a much more complex function.
      */
     async getAnalytics(config: any): Promise<any> {
+        console.log(`[QueryEngine] Running analytics query: ${config.type}`);
 
-        // Base music type: TODO: expand
-        if (config.type === 'music_counts') {
-            const query = this.indexer.getQueryBuilder();
+        switch (config.type) {
+            case 'music_counts_by_source':
+                console.log('[QueryEngine] Returning MOCK data for music_counts_by_source');
+                await new Promise(res => setTimeout(res, 800));
+                return [
+                    { sourceDriverId: 'spotify', eventCount: 5708 },
+                    { sourceDriverId: 'apple_music_backup', eventCount: 1245 },
+                    { sourceDriverId: 'google_takeout_music', eventCount: 320 },
+                ];
 
-            const result = await query
-                .where('eventType', 'MUSIC_LISTEN')
-                .groupBy('sourceDriverId')
-                .count('id as eventCount')
-                .select('sourceDriverId');
+            case 'stat_card_summary':
+                console.log('[QueryEngine] Returning MOCK data for stat_card_summary');
+                // Simulate a database delay
+                await new Promise(res => setTimeout(res, 500));
+                return {
+                    totalEvents: 12402,
+                    tracksPlayed: 5708,
+                    placesVisited: 182,
+                    activeDrivers: 3,
+                    change: "+10.2% vs last month",
+                };
 
-            return result;
+            // LIVE QUERY (example)
+            case 'total_event_count_LIVE':
+                const result = await this.indexer.getQueryBuilder().count('id as total');
+                return result[0];
+
+            default:
+                throw new Error(`Analytics type '${config.type}' not implemented.`);
         }
-
-        throw new Error(`Analytics type '${config.type}' not implemented.`);
     }
 
     /**
