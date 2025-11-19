@@ -48,26 +48,26 @@ export interface AnalyticsResponse {
 
 export type WidgetSize = 'half' | 'full';
 export type WidgetType =
-    | 'stat-single'   // Single big number (uses 1st stream)
-    | 'stat-list'     // List of top items (e.g. Top Artists)
-    | 'graph-bar'     // Bar chart comparing multiple streams
-    | 'graph-pie'     // Pie chart comparing multiple streams
-    | 'graph-line'    // Line chart showing trends over time
-    | 'graph-area';   // Area chart (filled line)
+    | 'stat-single'
+    | 'stat-list'
+    | 'graph-bar'
+    | 'graph-pie'
+    | 'graph-line'
+    | 'graph-area';
 
 export interface AnalyticsFilter {
-    eventType?: string; // 'MUSIC_LISTEN', 'LOCATION', 'SEARCH'
-    sourceDriverId?: string; // 'spotify', 'google-takeout'
-    dateRange?: string; // 'all', '30d', '7d', '24h'
+    eventType?: string;
+    sourceDriverId?: string;
+    dateRange?: string;
 }
 
 // A single series of data to fetch
 export interface DataStream {
     id: string;
-    label: string; // Display name (e.g. "Spotify Plays")
-    color?: string; // Hex code for graphs
+    label: string;
+    color?: string;
     filters: AnalyticsFilter;
-    operation: 'count' | 'sum'; // How to aggregate
+    operation: 'count' | 'sum';
 }
 
 export interface WidgetConfig {
@@ -76,5 +76,32 @@ export interface WidgetConfig {
     description?: string;
     size: WidgetSize;
     type: WidgetType;
-    streams: DataStream[]; // Array of data sources to visualize
+    streams: DataStream[];
+}
+
+
+export interface SystemLog {
+    id: string;
+    timestamp: string;
+    level: 'INFO' | 'WARN' | 'ERROR' | 'SUCCESS';
+    service: string;
+    message: string;
+}
+
+export interface SystemStats {
+    uptime: number;
+    driverStatus: {
+        total: number;
+        active: number
+    };
+    storage: {
+        used: string;
+        total: string;
+        percent: number
+    };
+    ingestion: {
+        totalEvents: number;
+        activeJobs: number;
+        nextJobs: { name: string; nextRun: string | null }[];
+    };
 }

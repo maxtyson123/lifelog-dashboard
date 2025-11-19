@@ -1,4 +1,11 @@
-import { DriverStatusResponse, HistoryResponse, SearchResponse, AnalyticsResponse } from '@/types/types';
+import {
+    DriverStatusResponse,
+    HistoryResponse,
+    SearchResponse,
+    AnalyticsResponse,
+    SystemLog,
+    SystemStats
+} from '@/types/types';
 
 // Centralise all API calls
 const API_BASE = 'http://localhost:3001/api';
@@ -70,4 +77,16 @@ export async function fetchAnalytics(queryConfig: any): Promise<AnalyticsRespons
         throw new Error(data.error || 'Failed to run analytics query');
     }
     return data;
+}
+
+export async function fetchSystemLogs(): Promise<SystemLog[]> {
+    const res = await fetch(`${API_BASE}/system/logs`);
+    if (!res.ok) throw new Error('Failed to fetch logs');
+    return res.json();
+}
+
+export async function fetchSystemStats(): Promise<SystemStats> {
+    const res = await fetch(`${API_BASE}/system/stats`);
+    if (!res.ok) throw new Error('Failed to fetch stats');
+    return res.json();
 }

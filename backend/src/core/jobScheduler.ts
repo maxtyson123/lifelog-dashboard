@@ -1,5 +1,6 @@
 import schedule from 'node-schedule';
 import { DriverRegistry } from './driverRegistry';
+import {systemLogger} from "./logger";
 
 /**
  * Manages all scheduled tasks for fetching data.
@@ -8,10 +9,12 @@ import { DriverRegistry } from './driverRegistry';
  */
 export class JobScheduler {
     private registry: DriverRegistry;
+    private scheduledJobs: Map<string, schedule.Job> = new Map();
+    private activeJobCount = 0;
 
     constructor(registry: DriverRegistry) {
         this.registry = registry;
-        console.log('[JobScheduler] Initialized.');
+        systemLogger.success('JobScheduler', 'Initialized.');
     }
 
     /**
@@ -19,7 +22,7 @@ export class JobScheduler {
      * Finds all automatic drivers and creates a recurring job for them.
      */
     start() {
-        console.log('[JobScheduler] Starting scheduler...');
+        systemLogger.info('JobScheduler', 'Starting scheduler...');
         const allDrivers = this.registry.getAllDrivers();
 
         let automaticJobs = 0;
@@ -30,13 +33,13 @@ export class JobScheduler {
                 const rule = '5 * * * *';
 
                 schedule.scheduleJob(rule, async () => {
-                    console.log(`[JobScheduler] Running scheduled job for: ${driver.metadata.name}`);
+                    this.activeJobCount++;
+                    systemLogger.info('JobScheduler', `Running scheduled job for: ${driver.metadata.name}`);
+
                     try {
                         const result = await driver.runFetch();
-                        console.log(
-                            `[JobScheduler] SUCCESS: ${driver.metadata.name} run finished. ` +
-                            `Found ${result.newEvents} new events.`
-                        );
+                        systemLogger.success('JobScheduler', `Finished scheduled run for ${driver.metadata.name}. Imported ${result.newEvents} events.`);
+
                         if (result.warnings && result.warnings.length > 0) {
                             console.warn(
                                 `[JobScheduler] WARNINGS from ${driver.metadata.name}:`,
@@ -44,19 +47,38 @@ export class JobScheduler {
                             );
                         }
                     } catch (err) {
-                        console.error(
-                            `❌ [JobScheduler] FAILED: ${driver.metadata.name} run failed:`,
-                            err
-                        );
+                        systemLogger.error('JobScheduler', `Scheduled run for ${driver.metadata.name} failed.`);
+                    } finally {
+                        this.activeJobCount--;
                     }
                 });
 
                 automaticJobs++;
-                console.log(`[JobScheduler] Scheduled automatic run for '${driver.metadata.name}' with rule: ${rule}`);
+                systemLogger.info(`JobScheduler`, `Scheduled automatic run for '${driver.metadata.name}' with rule: ${rule}`);
             }
         }
 
-        console.log(`[JobScheduler] Started with ${automaticJobs} automatic jobs.`);
+        systemLogger.success('JobScheduler', `Started with ${automaticJobs} automatic jobs.`);
+    }
+
+    /**
+     * Returns the current status of the scheduler for the dashboard.
+     */
+    getStatus() {
+        // Get next invocation times
+        const nextJobs = Array.from(this.scheduledJobs.entries()).map(([name, job]) => ({
+            name,
+            nextRun: job.nextInvocation()?.toISOString() || null
+        })).sort((a, b) => {
+            if (!a.nextRun) return 1;
+            if (!b.nextRun) return -1;
+            return new Date(a.nextRun).getTime() - new Date(b.nextRun).getTime();
+        });
+
+        return {
+            activeJobs: this.activeJobCount,
+            nextJobs: nextJobs.slice(0, 3)
+        };
     }
 
     /**
@@ -70,21 +92,18 @@ export class JobScheduler {
             throw new Error(`Driver with ID '${driverId}' not found.`);
         }
 
-        console.log(`[JobScheduler] Triggering manual run for: ${driver.metadata.name}`);
+        systemLogger.info('JobScheduler', `Manual run triggered for: ${driver.metadata.name}`);
         try {
+            this.activeJobCount++;
             const result = await driver.runFetch();
-            console.log(
-                `[JobScheduler] SUCCESS: Manual run for ${driver.metadata.name} finished. ` +
-                `Found ${result.newEvents} new events.`
-            );
+            systemLogger.success('JobScheduler', `Manual run for ${driver.metadata.name} finished. Found ${result.newEvents} new events.`);
             return result;
         } catch (err) {
-            console.error(
-                `[JobScheduler] FAILED: Manual run for ${driver.metadata.name} failed:`,
-                err
-            );
+            systemLogger.error('JobScheduler', `Manual run for ${driver.metadata.name} failed.`);
             // Re-throw the error so the API handler can catch it
             throw err;
+        } finally {
+            this.activeJobCount--;
         }
     }
 }

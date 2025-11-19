@@ -21,12 +21,9 @@ export class SpotifyDriver implements IDriver {
     async init(): Promise<void> {
         // Ensure the raw data path exists
         await fs.mkdir(this.rawDataPath, { recursive: true });
-        console.log('Spotify driver initialized.');
     }
 
     async runFetch(): Promise<{ newEvents: number }> {
-        console.log('Running Spotify fetch...');
-
         // Todo: API to export spotify data?
 
         const newEvents = await this.parseData();

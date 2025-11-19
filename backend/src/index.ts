@@ -9,6 +9,7 @@ import { JobScheduler } from './core/jobScheduler';
 import { apiRouter } from './api';
 import {QueryEngine} from "./core/queryEngine";
 import {__TEST_LOAD__} from "./types/express";
+import {systemLogger} from "./core/logger";
 
 async function main() {
     const app = express();
@@ -21,7 +22,7 @@ async function main() {
     app.use(morgan('dev'));
 
     // Core system
-    console.log('Initializing components...');
+    systemLogger.info('Server', 'Initialising components...');
     const indexer = new Indexer(CONFIG.INDEX_DB_PATH);
     await indexer.init();
     const queryEngine = new QueryEngine(indexer)
@@ -36,15 +37,15 @@ async function main() {
 
     // Pass core systems to API routes via context
     app.use((req, res, next) => {
-        req.context = { indexer, driverRegistry, jobScheduler, queryEngine };
+        req.context = { indexer, driverRegistry, jobScheduler, queryEngine, logger: systemLogger  };
         next();
     });
     app.use('/api', apiRouter);
 
     // Start
     app.listen(CONFIG.PORT, () => {
-        console.log(`Backend server running on http://localhost:${CONFIG.PORT}`);
-        console.log(`Loaded drivers: ${driverRegistry.getDriverIds().join(', ')}`);
+        systemLogger.success('Server', `Backend started on port ${CONFIG.PORT}`);
+        systemLogger.success('Server', `Loaded drivers: ${driverRegistry.getDriverIds().join(', ')}`);
     });
 }
 

@@ -1,6 +1,7 @@
 import { Indexer } from './indexer';
 import { LogEvent } from '../types/schema';
 import {Knex} from "knex";
+import {systemLogger} from "./logger";
 
 // Define filter types for the API
 export interface SearchFilters {
@@ -18,7 +19,7 @@ export interface SearchFilters {
  */
 export class QueryEngine {
     constructor(private indexer: Indexer) {
-        console.log('[QueryEngine] Initialized.');
+        systemLogger.success('QueryEngine', 'Initialized.');
     }
 
     /**
@@ -28,7 +29,6 @@ export class QueryEngine {
      * @param limit - Max number of results.
      */
     async search(queryText: string, filters: SearchFilters = {}, limit = 50): Promise<LogEvent[]> {
-        console.log(`[QueryEngine] Performing MOCK search for: "${queryText}"`);
         await new Promise(res => setTimeout(res, 300));
         return [
             {
@@ -79,7 +79,6 @@ export class QueryEngine {
      * @param endDate - ISO 8601 string.
      */
     async getHistory(startDate: string, endDate: string): Promise<LogEvent[]> {
-        console.log(`[QueryEngine] Fetching history from ${startDate} to ${endDate}`);
         const start = new Date(startDate).getTime();
         const end = new Date(endDate).getTime();
         const midPoint = new Date(start + (end - start) / 2).toISOString();
@@ -129,7 +128,6 @@ export class QueryEngine {
      * Runs analytics queries.
      */
     async getAnalytics(config: any): Promise<any> {
-        console.log(`[QueryEngine] Running analytics query type: ${config.type}`);
 
         // Simulate DB delay
         await new Promise(res => setTimeout(res, 400));

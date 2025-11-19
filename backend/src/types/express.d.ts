@@ -2,6 +2,7 @@ import { DriverRegistry } from '../core/driverRegistry';
 import { Indexer } from '../core/indexer';
 import { QueryEngine } from '../core/queryEngine';
 import { JobScheduler } from '../core/jobScheduler';
+import {SystemLogger} from "../core/logger";
 
 // Extend Express Request interface
 declare module 'express-serve-static-core' {
@@ -11,6 +12,7 @@ declare module 'express-serve-static-core' {
             driverRegistry: DriverRegistry;
             queryEngine: QueryEngine;
             jobScheduler: JobScheduler;
+            logger: SystemLogger;
         };
     }
 }

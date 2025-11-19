@@ -110,7 +110,7 @@ sourcesRouter.get<{}, SourcesGetRes, SourcesGetReq>('/', async (req, res) => {
  */
 sourcesRouter.post<SourcesPostParams, SourcesPostRes, SourcesPostParams>('/:id/run', async (req, res) => {
     try {
-        const { jobScheduler } = req.context;
+        const { jobScheduler, logger } = req.context;
         const { id: driverId } = req.params;
 
         if (typeof driverId !== 'string' || driverId.length === 0) {
@@ -119,6 +119,10 @@ sourcesRouter.post<SourcesPostParams, SourcesPostRes, SourcesPostParams>('/:id/r
 
         // The JobScheduler handles finding the driver and running it
         const result = await jobScheduler.triggerManualRun(driverId);
+
+        // Log
+        const newEvents = 12313; // Replace with result.newEvents when available
+        logger.success('JobScheduler', `Finished run for ${driverId}. Imported ${newEvents} events.`);
 
         res.json({
             message: `Successfully triggered run for '${driverId}'.`,

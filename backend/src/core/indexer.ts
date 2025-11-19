@@ -1,5 +1,6 @@
 import knex, { Knex } from 'knex';
 import { LogEvent } from '../types/schema';
+import {systemLogger} from "./logger";
 
 const EVENTS_TABLE = 'log_events';
 
@@ -15,7 +16,7 @@ export class Indexer {
 
     constructor(dbPath: string) {
         this.dbPath = dbPath;
-        console.log(`[Indexer] Initializing with DB at: ${dbPath}`);
+        systemLogger.info('Indexer', `Using database at: ${dbPath}`);
 
         this.db = knex({
             client: 'better-sqlite3',
@@ -47,12 +48,12 @@ export class Indexer {
             return;
         }
 
-        console.log('[Indexer] Initializing database schema...');
+        systemLogger.info('Indexer', 'Initializing database schema...');
         try {
             const exists = await this.db.schema.hasTable(EVENTS_TABLE);
 
             if (!exists) {
-                console.log(`[Indexer] Creating table: ${EVENTS_TABLE}`);
+                systemLogger.info('Indexer', `Creating table: ${EVENTS_TABLE}`);
                 await this.db.schema.createTable(EVENTS_TABLE, (table) => {
                     table.string('id').primary();
                     table.string('sourceDriverId').notNullable().index();
@@ -71,12 +72,12 @@ export class Indexer {
                 });
 
             } else {
-                console.log(`[Indexer] Table ${EVENTS_TABLE} already exists.`);
+                systemLogger.warn('Indexer', `Table already exists: ${EVENTS_TABLE}`);
             }
             this.isInitialized = true;
-            console.log('[Indexer] Database schema initialized successfully.');
+            systemLogger.success('Indexer', 'Database schema initialized successfully.');
         } catch (err) {
-            console.error('[Indexer] Failed to initialize database:', err);
+            systemLogger.error('Indexer', 'Failed to initialize database schema.');
             throw err;
         }
     }
@@ -94,7 +95,7 @@ export class Indexer {
             return;
         }
 
-        console.log(`[Indexer] Adding ${events.length} new events...`);
+        systemLogger.info('Indexer', `Adding ${events.length} new events to the index.`);
 
         try {
             const eventsToInsert = events.map(event => ({
@@ -107,9 +108,9 @@ export class Indexer {
                 await trx(EVENTS_TABLE).insert(eventsToInsert).onConflict('id').ignore();
             });
 
-            console.log(`[Indexer] Successfully added/updated ${events.length} events.`);
+            systemLogger.success('Indexer', `Successfully added/updated ${events.length} events.`);
         } catch (err) {
-            console.error('[Indexer] Error batch-inserting events:', err);
+            systemLogger.error('Indexer', 'Error batch-inserting events.');
             throw err;
         }
     }
@@ -124,9 +125,21 @@ export class Indexer {
         return this.db(EVENTS_TABLE);
     }
 
+    /**
+     * Returns stats for the system dashboard.
+     */
+    async getStats(): Promise<{ totalEvents: number }> {
+        if (!this.isInitialized) return { totalEvents: 0 };
+
+        const result = await this.db(EVENTS_TABLE).count('id as total').first();
+        return {
+            totalEvents: result ? Number(result.total) : 0
+        };
+    }
+
     async close(): Promise<void> {
         await this.db.destroy();
         this.isInitialized = false;
-        console.log('[Indexer] Database connection closed.');
+        systemLogger.info('Indexer', 'Database connection closed.');
     }
 }

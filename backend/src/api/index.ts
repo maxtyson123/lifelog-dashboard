@@ -3,6 +3,7 @@ import { searchRouter } from './search';
 import { historyRouter } from './history';
 import { analyticsRouter } from './analytics';
 import { sourcesRouter } from './sources';
+import {systemRouter} from "./system";
 
 const apiRouter = Router();
 
@@ -11,6 +12,7 @@ apiRouter.use('/search', searchRouter);
 apiRouter.use('/history', historyRouter);
 apiRouter.use('/analytics', analyticsRouter);
 apiRouter.use('/sources', sourcesRouter);
+apiRouter.use('/system', systemRouter);
 
 // Health check
 apiRouter.get('/status', (req, res) => {
