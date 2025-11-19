@@ -74,12 +74,12 @@ export class QueryEngine {
     }
 
     /**
-     * Retrieves all events for a specific time range, for the Timeline page.
+     * Retrieves all events for a specific time range, for the History page.
      * @param startDate - ISO 8601 string.
      * @param endDate - ISO 8601 string.
      */
-    async getTimeline(startDate: string, endDate: string): Promise<LogEvent[]> {
-        console.log(`[QueryEngine] Fetching timeline from ${startDate} to ${endDate}`);
+    async getHistory(startDate: string, endDate: string): Promise<LogEvent[]> {
+        console.log(`[QueryEngine] Fetching history from ${startDate} to ${endDate}`);
         const start = new Date(startDate).getTime();
         const end = new Date(endDate).getTime();
         const midPoint = new Date(start + (end - start) / 2).toISOString();
@@ -88,7 +88,7 @@ export class QueryEngine {
         // Return mock data
         return [
             {
-                id: 'mock-timeline-1',
+                id: 'mock-history-1',
                 timestamp: startPoint,
                 sourceDriverId: 'google-search',
                 eventType: 'SEARCH',
@@ -96,7 +96,7 @@ export class QueryEngine {
                 tags: ['mock'],
             },
             {
-                id: 'mock-timeline-2',
+                id: 'mock-history-2',
                 timestamp: midPoint,
                 sourceDriverId: 'spotify',
                 eventType: 'MUSIC_LISTEN',
@@ -104,7 +104,7 @@ export class QueryEngine {
                 tags: ['mock'],
             },
             {
-                id: 'mock-timeline-3',
+                id: 'mock-history-3',
                 timestamp: new Date(new Date(midPoint).getTime() + 1000 * 60 * 60).toISOString(),
                 sourceDriverId: 'google-timeline',
                 eventType: 'LOCATION',

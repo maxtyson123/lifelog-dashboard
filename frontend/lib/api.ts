@@ -1,4 +1,4 @@
-import { DriverStatusResponse, TimelineResponse, SearchResponse, AnalyticsResponse } from '@/types/types';
+import { DriverStatusResponse, HistoryResponse, SearchResponse, AnalyticsResponse } from '@/types/types';
 
 // Centralise all API calls
 const API_BASE = 'http://localhost:3001/api';
@@ -29,13 +29,13 @@ export async function triggerManualRun(driverId: string): Promise<any> {
 }
 
 /**
- * Fetches timeline events for a date range.
+ * Fetches history events for a date range.
  */
-export async function fetchTimeline(startDate: string, endDate: string): Promise<TimelineResponse> {
+export async function fetchHistory(startDate: string, endDate: string): Promise<HistoryResponse> {
     const params = new URLSearchParams({ startDate, endDate });
-    const res = await fetch(`${API_BASE}/timeline?${params}`);
+    const res = await fetch(`${API_BASE}/history?${params}`);
     if (!res.ok) {
-        throw new Error('Failed to fetch timeline');
+        throw new Error('Failed to fetch history');
     }
     return res.json();
 }

@@ -14,7 +14,7 @@ const navItems: NavItem[] = [
     { name: 'Home', href: '/', icon: Home },
     { name: 'Analytics', href: '/analytics', icon: BarChart2 },
     { name: 'Search', href: '/search', icon: Search },
-    { name: 'Timeline', href: '/timeline', icon: Clock },
+    { name: 'History', href: '/history', icon: Clock },
     { name: 'Data Sources', href: '/sources', icon: Database },
 ];
 

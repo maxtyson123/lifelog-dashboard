@@ -1,13 +1,13 @@
 import { Router } from 'express';
-import {SearchPostReq, SearchPostRes, TimelineGetReq, TimelineGetRes} from "../types/api";
+import {SearchPostReq, SearchPostRes, HistoryGetReq, HistoryGetRes} from "../types/api";
 
-const timelineRouter = Router();
+const historyRouter = Router();
 
 /**
- * GET /api/timeline
+ * GET /api/history
  * Fetches all events within a given time range.
  */
-timelineRouter.get<{}, TimelineGetRes, TimelineGetReq>('/', async (req, res) => {
+historyRouter.get<{}, HistoryGetRes, HistoryGetReq>('/', async (req, res) => {
     try {
         const { queryEngine } = req.context;
         const { startDate, endDate } = req.query;
@@ -26,7 +26,7 @@ timelineRouter.get<{}, TimelineGetRes, TimelineGetReq>('/', async (req, res) => 
             });
         }
 
-        const results = await queryEngine.getTimeline(startDate, endDate);
+        const results = await queryEngine.getHistory(startDate, endDate);
 
         res.json({
             range: { startDate, endDate },
@@ -34,9 +34,9 @@ timelineRouter.get<{}, TimelineGetRes, TimelineGetReq>('/', async (req, res) => 
             results,
         });
     } catch (err) {
-        console.error('[API /timeline] Error:', err);
-        res.status(500).json({ error: 'Failed to fetch timeline data.' });
+        console.error('[API /history] Error:', err);
+        res.status(500).json({ error: 'Failed to fetch history data.' });
     }
 });
 
-export { timelineRouter };
+export { historyRouter };

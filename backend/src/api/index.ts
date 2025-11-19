@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { searchRouter } from './search';
-import { timelineRouter } from './timeline';
+import { historyRouter } from './history';
 import { analyticsRouter } from './analytics';
 import { sourcesRouter } from './sources';
 
@@ -8,7 +8,7 @@ const apiRouter = Router();
 
 // Mount all the specific routers
 apiRouter.use('/search', searchRouter);
-apiRouter.use('/timeline', timelineRouter);
+apiRouter.use('/history', historyRouter);
 apiRouter.use('/analytics', analyticsRouter);
 apiRouter.use('/sources', sourcesRouter);
 

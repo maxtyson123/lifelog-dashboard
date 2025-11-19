@@ -27,7 +27,7 @@ export interface DriverStatusResponse {
     status: DriverStatus;
 }
 
-export interface TimelineResponse {
+export interface HistoryResponse {
     range: { startDate: string; endDate: string };
     count: number;
     results: LogEvent[];

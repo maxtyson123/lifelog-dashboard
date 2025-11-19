@@ -16,12 +16,12 @@ export type SearchPostRes = {
     error?: string;
 }
 
-export type TimelineGetReq = {
+export type HistoryGetReq = {
     startDate?: string;
     endDate?: string;
 }
 
-export type TimelineGetRes = {
+export type HistoryGetRes = {
     error?: string;
     range?: {
         startDate: string;

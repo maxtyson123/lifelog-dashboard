@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { PageHeader } from '@/components/UI/PageHeader';
 import { Button } from '@/components/UI/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/Card';
-import { fetchTimeline } from '@/lib/api';
+import { fetchHistory } from '@/lib/api';
 import { LogEvent } from '@/types/types';
 import { Music, Search, MapPin } from 'lucide-react';
 
@@ -19,7 +19,7 @@ const getTodayISO = (endOfDay = false) => {
     return d.toISOString();
 };
 
-export default function TimelinePage() {
+export default function HistoryPage() {
     const [startDate, setStartDate] = useState(getTodayISO());
     const [endDate, setEndDate] = useState(getTodayISO(true));
     const [events, setEvents] = useState<LogEvent[]>([]);
@@ -31,14 +31,17 @@ export default function TimelinePage() {
         setError(null);
         setEvents([]);
         try {
-            const data = await fetchTimeline(startDate, endDate);
+            const data = await fetchHistory(startDate, endDate);
             setEvents(data.results);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to fetch timeline');
+            setError(err instanceof Error ? err.message : 'Failed to fetch history');
         } finally {
             setLoading(false);
         }
     };
+    useEffect(() => {
+        handleFetch();
+    }, []);
 
     const EventIcon = ({ type }: { type: string }) => {
         if (type === 'MUSIC_LISTEN') return <Music className="h-5 w-5 text-pink-400" />;
@@ -74,7 +77,7 @@ export default function TimelinePage() {
 
     return (
         <div className="p-8">
-            <PageHeader title="Timeline" subtitle="A chronological view of your data." />
+            <PageHeader title="History" subtitle="A chronological view of your data." />
 
             <Card className="mt-8">
                 <CardHeader>
@@ -101,7 +104,7 @@ export default function TimelinePage() {
                             className="mt-1 block w-full rounded-md border-gray-600 bg-gray-800 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         />
                     </div>
-                    <Button onClick={handleFetch} isLoading={loading}>Fetch Timeline</Button>
+                    <Button onClick={handleFetch} isLoading={loading}>Fetch History</Button>
                 </CardContent>
             </Card>
 
