@@ -4,10 +4,11 @@
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["node", "express"]
   },
   "include": [
-    "backend/src/**/*",
-    "backend/src/types/**/*"
+    "src/**/*",
+    "src/types/**/*"
   ]
 }

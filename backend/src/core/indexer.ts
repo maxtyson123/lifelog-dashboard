@@ -1,13 +1,12 @@
-import Knex from 'knex';
+import knex, { Knex } from 'knex';
 import { LogEvent } from '../types/schema';
 
-// This is the name of our main table
 const EVENTS_TABLE = 'log_events';
 
 /**
  * Manages the SQLite database for indexing all LogEvents.
  * This class is responsible for schema creation and all read/write operations
- * to the fast index. It is powered by knex.js.
+ * to the fast index.
  */
 export class Indexer {
     private db: Knex;
@@ -17,16 +16,23 @@ export class Indexer {
     constructor(dbPath: string) {
         this.dbPath = dbPath;
         console.log(`[Indexer] Initializing with DB at: ${dbPath}`);
-        this.db = Knex({
+
+        this.db = knex({
             client: 'better-sqlite3',
             connection: {
                 filename: dbPath,
             },
             useNullAsDefault: true,
-            // Enable foreign keys for potential future use
             pool: {
-                afterCreate: (conn: any, cb: Function) => {
-                    conn.run('PRAGMA foreign_keys = ON', cb);
+                min: 1,
+                max: 1,
+                afterCreate: (conn: any, done: Function) => {
+                    try {
+                        conn.pragma('foreign_keys = ON');
+                        done(null, conn);
+                    } catch (err) {
+                        done(err, conn);
+                    }
                 },
             },
         });
@@ -53,9 +59,9 @@ export class Indexer {
                     table.string('eventType').notNullable().index();
                     table.timestamp('timestamp').notNullable().index();
 
+                    // Store the specific data payload (LocationData, MusicData, etc.) as a JSON string
                     table.json('data').notNullable();
                     table.json('tags');
-
                     table.string('rawFileRef');
                 });
 
@@ -91,14 +97,12 @@ export class Indexer {
         console.log(`[Indexer] Adding ${events.length} new events...`);
 
         try {
-            // Stringify JSON data for better-sqlite3
             const eventsToInsert = events.map(event => ({
                 ...event,
                 data: JSON.stringify(event.data),
                 tags: JSON.stringify(event.tags || []),
             }));
 
-            // Batch insert, skipping duplicates
             await this.db.transaction(async (trx) => {
                 await trx(EVENTS_TABLE).insert(eventsToInsert).onConflict('id').ignore();
             });
@@ -112,15 +116,17 @@ export class Indexer {
 
     /**
      * Provides a raw Knex query builder instance for the QueryEngine.
-     * This allows building complex, optimized queries from another class.
-     * @returns The Knex query builder instance.
      */
     getQueryBuilder(): Knex.QueryBuilder {
         if (!this.isInitialized) {
             throw new Error('Indexer is not initialized. Call init() first.');
         }
-        // We return a function that creates a query builder for the events table
-        // This ensures each query is fresh.
         return this.db(EVENTS_TABLE);
+    }
+
+    async close(): Promise<void> {
+        await this.db.destroy();
+        this.isInitialized = false;
+        console.log('[Indexer] Database connection closed.');
     }
 }

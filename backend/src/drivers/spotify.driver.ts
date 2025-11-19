@@ -52,23 +52,24 @@ export class SpotifyDriver implements IDriver {
         console.warn('SpotifyDriver.parseData() is not implemented.');
         return []; // Return empty array until implemented
 
-        const filePath = path.join(this.rawDataPath, 'endsong_0.json');
-        const fileContent = await fs.readFile(filePath, 'utf-8');
-        const rawEvents = JSON.parse(fileContent);
 
-        const logEvents: LogEvent[] = rawEvents.map(event => ({
-          id: `spotify-${event.ts}-${event.trackName}`,
-          timestamp: event.ts,
-          sourceDriverId: 'spotify',
-          eventType: 'MUSIC_LISTEN',
-          data: {
-            artist: event.artistName,
-            track: event.trackName,
-            msPlayed: event.msPlayed,
-          },
-          rawFileRef: filePath,
-          tags: ['music', event.artistName]
-        }));
-        return logEvents;
+        // const filePath = path.join(this.rawDataPath, 'endsong_0.json');
+        // const fileContent = await fs.readFile(filePath, 'utf-8');
+        // const rawEvents = JSON.parse(fileContent);
+        //
+        // const logEvents: LogEvent[] = rawEvents.map(event => ({
+        //   id: `spotify-${event.ts}-${event.trackName}`,
+        //   timestamp: event.ts,
+        //   sourceDriverId: 'spotify',
+        //   eventType: 'MUSIC_LISTEN',
+        //   data: {
+        //     artist: event.artistName,
+        //     track: event.trackName,
+        //     msPlayed: event.msPlayed,
+        //   },
+        //   rawFileRef: filePath,
+        //   tags: ['music', event.artistName]
+        // }));
+        // return logEvents;
     }
 }

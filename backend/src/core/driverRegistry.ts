@@ -3,8 +3,8 @@ import { Indexer } from './indexer';
 
 // Drivers
 import { SpotifyDriver } from '../drivers/spotify.driver';
-import { GoogleTakeoutDriver } from '../drivers/googleTakeout.driver';
-import { AppleBackupDriver } from '../drivers/appleBackup.driver';
+// import { GoogleTakeoutDriver } from '../drivers/googleTakeout.driver';
+// import { AppleBackupDriver } from '../drivers/appleBackup.driver';
 
 export class DriverRegistry {
     private drivers: Map<string, IDriver> = new Map();
@@ -16,8 +16,8 @@ export class DriverRegistry {
         // TODO: Load all dynamically
         const driversToLoad = [
             new SpotifyDriver(this.indexer),
-            new GoogleTakeoutDriver(this.indexer),
-            new AppleBackupDriver(this.indexer),
+            // new GoogleTakeoutDriver(this.indexer),
+            // new AppleBackupDriver(this.indexer),
         ];
 
         for (const driver of driversToLoad) {

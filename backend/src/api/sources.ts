@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import {SourcePostParams, SourcesGetReq, SourcesGetRes, SourcesPostParams, SourcesPostRes} from "../types/api";
+import {SourcesGetReq, SourcesGetRes, SourcesPostParams, SourcesPostRes} from "../types/api";
 
 const sourcesRouter = Router();
 
@@ -8,6 +8,69 @@ const sourcesRouter = Router();
  * Lists all available drivers and their current status.
  */
 sourcesRouter.get<{}, SourcesGetRes, SourcesGetReq>('/', async (req, res) => {
+
+    // TODO: Remove mock data and uncomment real implementation below
+    const mockDriverInfo = [
+        {
+            metadata: {
+                id: 'spotify',
+                name: 'Spotify',
+                description: 'Parses "MyData" Spotify exports.',
+                isAutomatic: true
+            },
+            status: {
+                lastPull: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
+                storageUsage: '1.2 GB',
+                health: 'OK',
+                message: 'Last pull successful. 120 new events.'
+            }
+        },
+        {
+            metadata: {
+                id: 'google-takeout',
+                name: 'Google Takeout',
+                description: 'Parses timeline, search, and activity.',
+                isAutomatic: true
+            },
+            status: {
+                lastPull: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+                storageUsage: '5.8 GB',
+                health: 'OK',
+                message: 'Awaiting new Takeout zip file.'
+            }
+        },
+        {
+            metadata: {
+                id: 'apple-backup',
+                name: 'Apple iPhone Backup',
+                description: 'Parses HealthKit and location data.',
+                isAutomatic: false
+            },
+            status: {
+                lastPull: null,
+                storageUsage: '0 MB',
+                health: 'WARN',
+                message: 'Manual run required. Point to backup file.'
+            }
+        },
+        {
+            metadata: {
+                id: 'system-logger',
+                name: 'System Logger',
+                description: 'Logs server health and performance.',
+                isAutomatic: true
+            },
+            status: {
+                lastPull: new Date().toISOString(),
+                storageUsage: '15.2 MB',
+                health: 'ERROR',
+                message: 'Failed to write to log file. Check disk space.'
+            }
+        }
+    ];
+
+    res.json(mockDriverInfo as SourcesGetRes);
+
     try {
         const { driverRegistry } = req.context;
         const drivers = driverRegistry.getAllDrivers();
@@ -33,7 +96,7 @@ sourcesRouter.get<{}, SourcesGetRes, SourcesGetReq>('/', async (req, res) => {
         });
 
         const driverInfo = await Promise.all(statusPromises);
-        res.json(driverInfo);
+        res.json(driverInfo as any);
 
     } catch (err) {
         console.error('[API /sources] Error:', err);

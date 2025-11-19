@@ -52,10 +52,7 @@ export type SourcesGetReq = {
 
 export type SourcesGetRes = {
     metadata: DriverMetadata;
-    status: {
-        health: DriverStatus;
-        message?: string;
-    };
+    status: DriverStatus;
 }[] | { error: string };
 
 export type SourcesPostParams = {

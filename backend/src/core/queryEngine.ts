@@ -1,5 +1,6 @@
 import { Indexer } from './indexer';
 import { LogEvent } from '../types/schema';
+import {Knex} from "knex";
 
 // Define filter types for the API
 export interface SearchFilters {
@@ -29,6 +30,34 @@ export class QueryEngine {
     async search(queryText: string, filters: SearchFilters = {}, limit = 50): Promise<LogEvent[]> {
         console.log(`[QueryEngine] Performing search for: "${queryText}"`);
 
+        return [
+            {
+                id: 'mock-search-1',
+                timestamp: new Date().toISOString(),
+                sourceDriverId: 'spotify',
+                eventType: 'MUSIC_LISTEN',
+                data: { artist: 'Mock Artist', track: 'Song matching ' + queryText },
+                tags: ['mock', 'search'],
+            },
+            {
+                id: 'mock-search-2',
+                timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
+                sourceDriverId: 'google-search',
+                eventType: 'SEARCH',
+                data: { query: `search for ${queryText}` },
+                tags: ['mock'],
+            },
+            {
+                id: 'mock-search-3',
+                timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+                sourceDriverId: 'google-timeline',
+                eventType: 'LOCATION',
+                data: { latitude: 40.7128, longitude: -74.0060, activity: 'walking' },
+                tags: ['mock', 'nyc'],
+            }
+        ].slice(0, limit) as any; // Respect the limit
+
+
         // Get a new query builder instance from the indexer
         const query = this.indexer.getQueryBuilder();
 
@@ -51,6 +80,39 @@ export class QueryEngine {
      */
     async getTimeline(startDate: string, endDate: string): Promise<LogEvent[]> {
         console.log(`[QueryEngine] Fetching timeline from ${startDate} to ${endDate}`);
+        const start = new Date(startDate).getTime();
+        const end = new Date(endDate).getTime();
+        const midPoint = new Date(start + (end - start) / 2).toISOString();
+        const startPoint = new Date(start + 1000 * 60 * 15).toISOString(); // 15 mins in
+
+        // Return mock data
+        return [
+            {
+                id: 'mock-timeline-1',
+                timestamp: startPoint,
+                sourceDriverId: 'google-search',
+                eventType: 'SEARCH',
+                data: { query: 'mock search query' },
+                tags: ['mock'],
+            },
+            {
+                id: 'mock-timeline-2',
+                timestamp: midPoint,
+                sourceDriverId: 'spotify',
+                eventType: 'MUSIC_LISTEN',
+                data: { artist: 'Mock Artist', track: 'Mock Track' } as any,
+                tags: ['mock'],
+            },
+            {
+                id: 'mock-timeline-3',
+                timestamp: new Date(new Date(midPoint).getTime() + 1000 * 60 * 60).toISOString(),
+                sourceDriverId: 'google-timeline',
+                eventType: 'LOCATION',
+                data: { latitude: 40.7128, longitude: -74.0060, activity: 'running' },
+                tags: ['mock', 'nyc'],
+            }
+        ];
+
 
         const query = this.indexer.getQueryBuilder();
 

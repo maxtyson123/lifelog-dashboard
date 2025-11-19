@@ -1,7 +1,7 @@
 import { DriverStatusResponse, TimelineResponse, SearchResponse, AnalyticsResponse } from '@/types';
 
 // Centralise all API calls
-const API_BASE = '/api'; // Uses Next.js rewrites
+const API_BASE = 'http://localhost:3001/api';
 
 /**
  * Fetches all data sources and their status.
