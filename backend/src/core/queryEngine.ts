@@ -28,8 +28,8 @@ export class QueryEngine {
      * @param limit - Max number of results.
      */
     async search(queryText: string, filters: SearchFilters = {}, limit = 50): Promise<LogEvent[]> {
-        console.log(`[QueryEngine] Performing search for: "${queryText}"`);
-
+        console.log(`[QueryEngine] Performing MOCK search for: "${queryText}"`);
+        await new Promise(res => setTimeout(res, 300));
         return [
             {
                 id: 'mock-search-1',
@@ -126,47 +126,87 @@ export class QueryEngine {
     }
 
     /**
-     * Runs an aggregate query for the Analytics page.
-     * This is a placeholder for a much more complex function.
+     * Runs analytics queries.
      */
     async getAnalytics(config: any): Promise<any> {
-        console.log(`[QueryEngine] Running analytics query: ${config.type}`);
+        console.log(`[QueryEngine] Running analytics query type: ${config.type}`);
 
-        switch (config.type) {
-            case 'music_counts_by_source':
-                console.log('[QueryEngine] Returning MOCK data for music_counts_by_source');
-                await new Promise(res => setTimeout(res, 800));
-                return [
-                    { sourceDriverId: 'spotify', eventCount: 5708 },
-                    { sourceDriverId: 'apple_music_backup', eventCount: 1245 },
-                    { sourceDriverId: 'google_takeout_music', eventCount: 320 },
-                ];
+        // Simulate DB delay
+        await new Promise(res => setTimeout(res, 400));
 
-            case 'stat_card_summary':
-                console.log('[QueryEngine] Returning MOCK data for stat_card_summary');
-                // Simulate a database delay
-                await new Promise(res => setTimeout(res, 500));
-                return {
-                    totalEvents: 12402,
-                    tracksPlayed: 5708,
-                    placesVisited: 182,
-                    activeDrivers: 3,
-                    change: "+10.2% vs last month",
-                };
-
-            // LIVE QUERY (example)
-            case 'total_event_count_LIVE':
-                const result = await this.indexer.getQueryBuilder().count('id as total');
-                return result[0];
-
-            default:
-                throw new Error(`Analytics type '${config.type}' not implemented.`);
+        if (config.type === 'multi_stream') {
+            return this.handleMultiStream(config.streams, config.widgetType);
         }
+
+        throw new Error(`Analytics type '${config.type}' not implemented.`);
     }
 
     /**
-     * A reusable helper to apply standard filters to a Knex query.
+     * Iterates over requested data streams and generates result sets.
      */
+    private async handleMultiStream(streams: any[], widgetType: string) {
+        const results = [];
+
+        for (const stream of streams) {
+            let baseValue = 100 + (stream.label.length * 120);
+
+            // MOCK: Boost value based on filter to make it look realistic
+            if (stream.filters?.eventType === 'MUSIC_LISTEN') baseValue += 2000;
+            if (stream.filters?.eventType === 'LOCATION') baseValue += 500;
+
+            // Lists
+            if (widgetType === 'stat-list') {
+                results.push({
+                    id: stream.id,
+                    label: stream.label,
+                    type: 'list',
+                    data: [
+                        { label: 'The Weekend', value: baseValue },
+                        { label: 'Taylor Swift', value: Math.floor(baseValue * 0.8) },
+                        { label: 'Daft Punk', value: Math.floor(baseValue * 0.6) },
+                        { label: 'Kendrick Lamar', value: Math.floor(baseValue * 0.4) },
+                        { label: 'Pink Floyd', value: Math.floor(baseValue * 0.2) },
+                    ]
+                });
+                continue;
+            }
+
+            // Time Based (Line/Area Charts)
+            if (widgetType === 'graph-line' || widgetType === 'graph-area') {
+                const points = [];
+                const now = new Date();
+                // Generate 7 days of mock trend data
+                for (let i = 6; i >= 0; i--) {
+                    const d = new Date();
+                    d.setDate(now.getDate() - i);
+                    points.push({
+                        date: d.toISOString().split('T')[0], // YYYY-MM-DD
+                        value: Math.floor(baseValue / 7) + Math.floor(Math.random() * 100)
+                    });
+                }
+                results.push({
+                    id: stream.id,
+                    label: stream.label,
+                    color: stream.color,
+                    type: 'series',
+                    data: points
+                });
+                continue;
+            }
+
+            // Aggregations (Pie/Bar/Stat)
+            results.push({
+                id: stream.id,
+                label: stream.label,
+                color: stream.color,
+                value: baseValue, // The total count/sum
+                type: 'aggregate'
+            });
+        }
+
+        return results;
+    }
+
     private applyFilters(query: Knex.QueryBuilder, filters: SearchFilters) {
         if (filters.startDate) {
             query.where('timestamp', '>=', filters.startDate);
@@ -182,10 +222,6 @@ export class QueryEngine {
         }
     }
 
-    /**
-     * De-serializes the 'data' and 'tags' fields from JSON
-     * strings back into objects.
-     */
     private parseEventFromDb(dbRow: any): LogEvent {
         return {
             ...dbRow,

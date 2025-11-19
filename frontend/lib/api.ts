@@ -1,4 +1,4 @@
-import { DriverStatusResponse, TimelineResponse, SearchResponse, AnalyticsResponse } from '@/types';
+import { DriverStatusResponse, TimelineResponse, SearchResponse, AnalyticsResponse } from '@/types/types';
 
 // Centralise all API calls
 const API_BASE = 'http://localhost:3001/api';
